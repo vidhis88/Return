@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ReturnApp</string>
+
+    <string name="hello_world">Hello world!\n\nWelcome to the Return Android app</string>
+    <string name="login_prompt">Please sign in with Facebook</string>
+    <string name="facebook_app_id">477579139085705</string>
+    <string name="action_settings">Settings</string>
+</resources>
