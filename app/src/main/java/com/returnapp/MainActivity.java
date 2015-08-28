@@ -1,11 +1,16 @@
 package com.returnapp;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 
-import com.parse.ParseObject;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,30 +19,50 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        ParseObject testObject = new ParseObject("TestObject");
-        testObject.put("foo", "bar");
-        testObject.saveInBackground();
+	    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+	    setSupportActionBar(toolbar);
+
+	    ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
+	    setupViewPager(viewPager);
+
+	    TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+	    tabLayout.setupWithViewPager(viewPager);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
-    }
+	private void setupViewPager(ViewPager viewPager) {
+		ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+		adapter.addFragment(new TabFragment(), "One");
+		adapter.addFragment(new TabFragment(), "Two");
+		adapter.addFragment(new TabFragment(), "Three");
+		viewPager.setAdapter(adapter);
+	}
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+	private class ViewPagerAdapter extends FragmentPagerAdapter {
+		private final List<Fragment> tabFragments = new ArrayList<>();
+		private final List<String> tabTitles = new ArrayList<>();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+		public ViewPagerAdapter(FragmentManager fm) {
+			super(fm);
+		}
 
-        return super.onOptionsItemSelected(item);
-    }
+		public void addFragment(Fragment fragment, String title) {
+			tabFragments.add(fragment);
+			tabTitles.add(title);
+		}
+
+		@Override
+		public Fragment getItem(int position) {
+			return tabFragments.get(position);
+		}
+
+		@Override
+		public int getCount() {
+			return tabFragments.size();
+		}
+
+		@Override
+		public CharSequence getPageTitle(int position) {
+			return tabTitles.get(position);
+		}
+	}
 }
