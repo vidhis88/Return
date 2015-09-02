@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -17,10 +19,11 @@ import com.facebook.login.widget.LoginButton;
 /**
  * Created by vidhi on 6/29/15.
  */
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private CallbackManager callbackManager;
 
 	private Context context;
+	private TextView helloTv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +38,19 @@ public class LoginActivity extends AppCompatActivity {
         loginBtn.setReadPermissions("public_profile", "email");
         loginBtn.registerCallback(callbackManager, new FbLoginCallback());
 
+	    helloTv = (TextView) findViewById(R.id.hello_tv);
+	    helloTv.setOnClickListener(this);
+
 	    context = this;
     }
+
+	@Override
+	public void onClick(View view) {
+		if (view.getId() == R.id.hello_tv) {
+			Intent intent = new Intent(this, MainActivity.class);
+			startActivity(intent);
+		}
+	}
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
