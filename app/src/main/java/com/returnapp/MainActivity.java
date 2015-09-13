@@ -1,5 +1,7 @@
 package com.returnapp;
 
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -9,10 +11,17 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+		GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
+
+	protected GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +36,30 @@ public class MainActivity extends AppCompatActivity {
 
 	    TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
 	    tabLayout.setupWithViewPager(viewPager);
+		setupGoogleClient();
     }
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		mGoogleApiClient.connect();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		if (mGoogleApiClient != null) {
+			mGoogleApiClient.disconnect();
+		}
+	}
+
+	private void setupGoogleClient() {
+		mGoogleApiClient = new GoogleApiClient.Builder(this)
+				.addApi(ActivityRecognition.API)
+				.addConnectionCallbacks(this)
+				.addOnConnectionFailedListener(this)
+				.build();
+	}
 
 	private void setupViewPager(ViewPager viewPager) {
 		ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -35,6 +67,23 @@ public class MainActivity extends AppCompatActivity {
 		adapter.addFragment(new TabFragment(), "Two");
 		adapter.addFragment(new TabFragment(), "Three");
 		viewPager.setAdapter(adapter);
+	}
+
+	@Override
+	public void onConnected(Bundle bundle) {
+		Intent activityReconIntent = new Intent(this, ActivityRecognitionService.class);
+		PendingIntent activityServiceIntent = PendingIntent.getService(this, 0, activityReconIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 2*1000*60, activityServiceIntent);
+	}
+
+	@Override
+	public void onConnectionSuspended(int i) {
+
+	}
+
+	@Override
+	public void onConnectionFailed(ConnectionResult connectionResult) {
+
 	}
 
 	private class ViewPagerAdapter extends FragmentPagerAdapter {
