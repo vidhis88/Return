@@ -1,115 +1,66 @@
 package com.returnapp;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
 /**
  * Created by vidhi on 6/29/15.
  */
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
-    private CallbackManager callbackManager;
-
-	private Context context;
-	private TextView helloTv;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        callbackManager = CallbackManager.Factory.create();
-
-        setContentView(R.layout.login_activity);
-
-        LoginButton loginBtn = (LoginButton) findViewById(R.id.login_button);
-        loginBtn.setReadPermissions("public_profile", "email");
-        loginBtn.registerCallback(callbackManager, new FbLoginCallback());
-
-	    helloTv = (TextView) findViewById(R.id.hello_tv);
-	    helloTv.setOnClickListener(this);
-
-	    context = this;
-    }
+public class LoginActivity extends AppCompatActivity {
+	private CallbackManager callbackManager;
 
 	@Override
-	public void onClick(View view) {
-		if (view.getId() == R.id.hello_tv) {
-			Intent intent = new Intent(this, MainActivity.class);
-			startActivity(intent);
-		}
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.login_activity);
+		setTitle("Get started");
+
+		callbackManager = CallbackManager.Factory.create();
+
+		LoginButton loginBtn = (LoginButton) findViewById(R.id.login_button);
+		loginBtn.setReadPermissions("public_profile", "email");
+		loginBtn.registerCallback(callbackManager, new FbLoginCallback(this));
 	}
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        callbackManager.onActivityResult(requestCode, resultCode, data);
-    }
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		callbackManager.onActivityResult(requestCode, resultCode, data);
+	}
 
-	public class FbLoginCallback implements FacebookCallback<LoginResult> {
+	private class FbLoginCallback implements FacebookCallback<LoginResult> {
+		private Activity activity;
+
+		public FbLoginCallback(Activity activity) {
+			this.activity = activity;
+		}
+
 		@Override
 		public void onSuccess(LoginResult loginResult) {
-			final AccessToken token = loginResult.getAccessToken();
+			AccessToken token = loginResult.getAccessToken();
+			RouterActivity.updateAccessToken(activity, token);
 			Log.v("Vidhi", "login successful: access token is " + token);
 			Log.w("Vidhi", "permissions are " + loginResult.getRecentlyGrantedPermissions());
 
-//	            GraphRequest request = GraphRequest.newMeRequest(
-//			            token,
-//			            new GraphRequest.GraphJSONObjectCallback() {
-//				            @Override
-//				            public void onCompleted(JSONObject object, GraphResponse response) {
-//					            // Application code
-//					            if (response.getError() == null) {
-//						            try {
-//							            ParseUser user = new ParseUser();
-//							            user.setUsername("u_" + object.getString("id"));
-//							            user.setPassword(object.getString("id"));
-//							            user.setEmail(object.getString("email"));
-//
-//							            user.put("name", object.getString("name"));
-//							            user.put("fb_token", token.getToken());
-//
-//							            user.signUpInBackground(new SignUpCallback() {
-//								            public void done(ParseException e) {
-//									            if (e == null) {
-//										            // Hooray! Let them use the app now.
-//									            } else {
-//										            // Sign up didn't succeed. Look at the ParseException
-//										            // to figure out what went wrong
-//									            }
-//								            }
-//							            });
-//						            } catch (JSONException e) {
-//							            Log.e("Return", "Login: Error parsing JSON");
-//						            }
-//					            }
-//				            }
-//			            });
-//	            Bundle parameters = new Bundle();
-//	            parameters.putString("fields", "id,name,email");
-//	            request.setParameters(parameters);
-//	            request.executeAsync();
-
-			Intent intent = new Intent(context, MainActivity.class);
-			startActivity(intent);
+			Intent intent = new Intent(activity, TabsActivity.class);
+			activity.startActivity(intent);
+			activity.finish();
 		}
 
 		@Override
 		public void onCancel() {
 			Log.d("Vidhi", "login cancelled");
-			// TODO: take them to a screen explaining why we cannot move forward without it
+			// TODO: take them to a screen explaining why (to build trust) we need all that information before moving forward
 		}
 
 		@Override

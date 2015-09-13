@@ -12,7 +12,7 @@ import com.google.android.gms.location.DetectedActivity;
 
 public class ActivityRecognitionService extends IntentService {
 
-    public static final String TAG = "ActivityRecognitionService";
+    private static final String TAG = "ActivityRecognitionService";
 
     public ActivityRecognitionService() {
         super(TAG);
@@ -28,7 +28,7 @@ public class ActivityRecognitionService extends IntentService {
             int type = detectedActivity.getType();
             String name = getActivityName(type);
 
-            Intent notifyIntent = new Intent(this, MainActivity.class);
+            Intent notifyIntent = new Intent(this, TabsActivity.class);
             PendingIntent pIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), notifyIntent, 0);
 
             Notification notification = new Notification.Builder(this)
